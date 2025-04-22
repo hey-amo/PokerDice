@@ -12,9 +12,10 @@ enum GameState: Int {
 }
 
 enum HandRank: String {
+    case noHand = 0
     case fiveOfAKind, fourOfAKind, fullHouse
     case threeOfAKind, twoPair, onePair
-    case highCard, none
+    case highCard
 }
 
 extension HandRank: CustomStringConvertible {
@@ -27,7 +28,7 @@ extension HandRank: CustomStringConvertible {
         case .twoPair: return "Two pair"
         case .onePair: return "One pair"
         case .highCard: return "High card"
-        case .none: return "No hand"
+        case .noHand: return "No hand"
         }
     }
 }
@@ -35,7 +36,7 @@ extension HandRank: CustomStringConvertible {
 struct DiceGameState {
     var dice: [DiceFace] = []
     var gameState: GameState = .idle
-    var handRank: HandRank = .none
+    var handRank: HandRank = .noHand
 
     mutating func rollDice() {
         dice = (0..<5).map { _ in DiceFace.allCases.randomElement()! }

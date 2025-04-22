@@ -10,11 +10,62 @@ import XCTest
 
 final class SimplePokerDiceTests: XCTestCase {
 
-    func testPokerHandEval() throws {
-        let hand: [DiceFace] = [.jack, .queen, .jack, .jack, .queen]
-        let rank = PokerHandEvaluator.evaluate(hand)
-        print(rank.rawValue)  // Full House
-        XCTAssertEqual(rank.rawValue, "Full house")
-        XCTAssertEqual(rank, <#T##expression2: Equatable##Equatable#>)
+    func testPokerHand_fiveOfAKind() throws {
+        let hand: [DiceFace] = [.jack, .jack, .jack, .jack, .jack]
+        let result = PokerHandEvaluator.evaluate(hand)
+        XCTAssertEqual(result, .fiveOfAKind)
     }
+    
+    func testPokerHand_fourOfAKind() throws {
+        let hand: [DiceFace] = [.jack, .jack, .jack, .jack, .queen]
+        let result = PokerHandEvaluator.evaluate(hand)
+        XCTAssertEqual(result, .fourOfAKind)
+    }
+    
+    func testPokerHand_FullHouse() throws {
+        let hand: [DiceFace] = [.jack, .queen, .jack, .jack, .queen]
+        let result = PokerHandEvaluator.evaluate(hand)
+        XCTAssertEqual(result, .fullHouse)
+    }
+    
+    func testPokerHand_threeOfAKind() throws {
+        let hand: [DiceFace] = [.jack, .jack, .jack, .aceSpades, .queen]
+        let result = PokerHandEvaluator.evaluate(hand)
+        XCTAssertEqual(result, .threeOfAKind)
+    }
+
+    func testPokerHand_twoPair() {
+        let hand: [DiceFace] = [
+            .jack, .jack,
+            .queen, .queen,
+            .aceSpades
+        ]
+        let result = PokerHandEvaluator.evaluate(hand)
+        XCTAssertEqual(result, .twoPair, "Expected Two Pair, got \(result.rawValue)")
+    }
+    
+    func testPokerHand_onePair() throws {
+        let hand: [DiceFace] = [
+                    .nineClubs, .nineDiamonds,
+                    .jack, .queen, .king
+                ]
+        let result = PokerHandEvaluator.evaluate(hand)
+        XCTAssertEqual(result, .onePair, "Expected One Pair, got \(result.rawValue)")
+    }
+    
+    
+    func testPokerHand_highCard() throws {
+        let hand: [DiceFace] = [.nineClubs, .jack, .queen,.king, .aceSpades]
+        let result = PokerHandEvaluator.evaluate(hand)
+        XCTAssertEqual(result, .highCard, "Expected High Card, got \(result.rawValue)")
+    }
+    
+    func testPokerHand_noHand() throws {
+        let hand: [DiceFace] = [
+                    .blank, .blank, .blank, .blank, .blank
+                ]
+        let result = PokerHandEvaluator.evaluate(hand)
+        XCTAssertEqual(result, .noHand, "Returned: \(result.rawValue)")
+    }
+    
 }

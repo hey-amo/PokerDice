@@ -10,13 +10,14 @@
 
 struct PokerHandEvaluator {
     static func evaluate(_ dice: [DiceFace]) -> HandRank {
-        let rankCounts = dice
+        let validRanks = dice
             .map { $0.rankValue }
+            .filter { $0 != 0 }  // Remove blanks
             .reduce(into: [:]) { counts, rank in
                 counts[rank, default: 0] += 1
             }
 
-        let counts = rankCounts.values.sorted(by: >)
+        let counts = validRanks.values.sorted(by: >)
 
         switch counts {
         case [5]: return .fiveOfAKind
@@ -26,7 +27,7 @@ struct PokerHandEvaluator {
         case [2, 2, 1]: return .twoPair
         case [2, 1, 1, 1]: return .onePair
         case [1, 1, 1, 1, 1]: return .highCard
-        default: return .none
+        default: return .noHand
         }
     }
 }
