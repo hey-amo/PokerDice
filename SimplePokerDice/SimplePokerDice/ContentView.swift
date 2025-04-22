@@ -8,16 +8,20 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var currentDie = Int.random(in: 0...6)
+
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            DiceFaceView(index: currentDie)
+                .frame(width: 100, height: 100)
+
+            Button("Roll") {
+                currentDie = Int.random(in: 0...6)
+            }
         }
-        .padding()
     }
 }
+
 
 #Preview {
     ContentView()
