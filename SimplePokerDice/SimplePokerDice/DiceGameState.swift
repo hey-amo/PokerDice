@@ -31,13 +31,43 @@ extension HandRank: CustomStringConvertible {
     }
 }
 
+// MARK: Scoring ranks
+
+extension HandRank {
+    var score: Int {
+        switch self {
+        case .fiveOfAKind: return 50
+        case .fourOfAKind: return 25
+        case .fullHouse: return 15
+        case .threeOfAKind: return 10
+        case .twoPair: return 5
+        case .onePair: return 2
+        case .highCard: return 1
+        case .noHand: return 0
+        }
+    }
+}
+
+// MARK: Game State
+
 struct DiceGameState {
-    var dice: [DiceFace] = []
+    var dice: [DiceFace] = Array(repeating: .blank, count: 5)
     var gameState: GameState = .idle
     var handRank: HandRank = .noHand
+    var score: Int = 0
+    var round: Int = 0
+    
+    mutating func reset() {
+        self.score = 0
+        self.round = 0
+    }
 
     mutating func rollDice() {
         dice = (0..<5).map { _ in DiceFace.allCases.randomElement()! }
         handRank = PokerHandEvaluator.evaluate(dice)
+        
+        score += handRank.score
+        round += 1
     }
+    
 }

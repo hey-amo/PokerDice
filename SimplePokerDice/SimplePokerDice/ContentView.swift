@@ -9,34 +9,44 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var gameState = DiceGameState()
-    var body: some View {
-            VStack(spacing: 20) {
-                Text("Poker Dice")
-                    .font(.largeTitle)
-                    .bold()
+    @State private var isRolling = false
 
-                HStack(spacing: 12) {
-                    ForEach(0..<5, id: \.self) { index in
-                        DiceFaceView(index: gameState.dice.indices.contains(index) ? gameState.dice[index].rawValue : 0)
-                            .frame(width: 60, height: 60)
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Simple Poker Dice").font(.largeTitle).bold()
+
+            HStack(spacing: 12) {
+                ForEach(1..<5, id: \.self) { i in
+                    VStack
+                    {
+                        Text("i: \(i)")
+                        
+                        DiceFaceView(face: gameState.dice[i], isRolling: isRolling)
+                            .frame(width: 60, height: 80)
                     }
                 }
+            }
 
-                Button("Roll Dice") {
+            Button("Roll Dice") {
+                isRolling = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     gameState.rollDice()
+                    isRolling = false
                 }
-                .padding()
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-
-                Text("Hand: \(gameState.handRank.description)")
-                    .font(.headline)
-                    .padding(.top)
             }
             .padding()
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+
+            Text("Hand: \(gameState.handRank.description)")
+            Text("Score: \(gameState.score)")
+            Text("Round: \(gameState.round)")
         }
+        .padding()
+    }
 }
+
 
 
 #Preview {
