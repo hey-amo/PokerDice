@@ -4,6 +4,7 @@
 //
 //  Created by Amarjit on 22/04/2025.
 //
+import Foundation
 
 enum GameState: Int {
     case idle, roll, evaluate
@@ -51,7 +52,9 @@ extension HandRank {
 // MARK: Game State
 
 struct DiceGameState {
-    var dice: [DiceFace] = Array(repeating: .blank, count: 5)
+    //var dice: [DiceFace] = Array(repeating: .blank, count: 5)
+    var dice: [Die] = (0..<5).map { _ in Die(face: DiceFace.validFaces.randomElement()!) }
+
     var gameState: GameState = .idle
     var handRank: HandRank = .noHand
     var score: Int = 0
@@ -63,11 +66,25 @@ struct DiceGameState {
     }
 
     mutating func rollDice() {
-        dice = (0..<5).map { _ in DiceFace.allCases.randomElement()! }
-        handRank = PokerHandEvaluator.evaluate(dice)
         
+        for i in dice.indices {
+            if !dice[i].isHeld {
+                dice[i].face = DiceFace.validFaces.randomElement()!
+            }
+        }
+        
+        // Evaulate and update score
+        handRank = PokerHandEvaluator.evaluate(dice.map { $0.face })
         score += handRank.score
         round += 1
     }
     
+    mutating func toggleHold(for dieID: UUID) {
+        if let index = dice.firstIndex(where: { $0.id == dieID }) {
+            dice[index].isHeld.toggle()
+        }
+    }
+    
+    
+
 }

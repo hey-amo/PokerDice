@@ -8,8 +8,14 @@
 
 import SwiftUI
 
+struct Die: Identifiable {
+    let id = UUID()
+    var face: DiceFace
+    var isHeld: Bool = false
+}
+
 enum DiceFace: Int, CaseIterable {
-    case blank = 0, nineClubs, nineDiamonds, jack, queen, king, aceSpades
+    case nineClubs, nineDiamonds, jack, queen, king, aceSpades
     
     var rankValue: Int {
        switch self {
@@ -18,11 +24,18 @@ enum DiceFace: Int, CaseIterable {
        case .queen: return 12
        case .king: return 13
        case .aceSpades: return 14
-       default: return 0
        }
    }
 }
 
+extension DiceFace {
+    static var validFaces: [DiceFace] {
+        return allCases
+    }
+}
+
+
+// CROPPED IMAGE
 /*
 struct DiceFaceView: View {
     let index: Int // 0 through 6
@@ -52,8 +65,11 @@ struct DiceFaceView: View {
 }
 */
 
+// MARK: DiceFaceView
+
 struct DiceFaceView: View {
     let face: DiceFace
+    let isHeld: Bool
     let isRolling: Bool
 
     var body: some View {
@@ -70,10 +86,6 @@ struct DiceFaceView: View {
                            .lineLimit(1)
                            .allowsTightening(true)
                            .frame(maxWidth: .infinity)
-//            Text(faceSymbol)
-//                .font(.largeTitle)
-//            Text(faceLabel)
-//                .font(.headline)
         }
         .padding(8.0)
         .frame(width: 60, height: 80)
@@ -93,7 +105,6 @@ struct DiceFaceView: View {
         case .queen: return "q.circle.fill"
         case .king: return "k.circle.fill"
         case .aceSpades: return "suit.spade.fill"
-        default: return "questionmark"
         }
     }
 
@@ -104,7 +115,6 @@ struct DiceFaceView: View {
         case .queen: return "Q"
         case .king: return "K"
         case .aceSpades: return "A"
-        default: return "?"
         }
     }
 }
