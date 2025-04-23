@@ -6,12 +6,10 @@
 //
 
 enum GameState: Int {
-    case idle
-    case roll
-    case evaluate
+    case idle, roll, evaluate
 }
 
-enum HandRank: String {
+enum HandRank: Int {
     case noHand = 0
     case fiveOfAKind, fourOfAKind, fullHouse
     case threeOfAKind, twoPair, onePair
