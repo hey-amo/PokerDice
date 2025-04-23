@@ -11,8 +11,7 @@
 struct PokerHandEvaluator {
     static func evaluate(_ dice: [DiceFace]) -> HandRank {
         let validRanks = dice
-            .map { $0.rankValue }
-            .filter { $0 != 0 }  // Remove blanks
+            .map { $0.rawValue }
             .reduce(into: [:]) { counts, rank in
                 counts[rank, default: 0] += 1
             }

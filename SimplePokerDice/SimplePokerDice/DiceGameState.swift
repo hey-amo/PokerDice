@@ -10,6 +10,16 @@ enum GameState: Int {
     case idle, roll, evaluate
 }
 
+extension GameState: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .idle: return "IDLE"
+        case .roll: return "ROLLING"
+        case .evaluate: return "EVALUATING"
+        }
+    }
+}
+
 enum HandRank: Int {
     case noHand = 0
     case fiveOfAKind, fourOfAKind, fullHouse
@@ -32,8 +42,6 @@ extension HandRank: CustomStringConvertible {
     }
 }
 
-// MARK: Scoring ranks
-
 extension HandRank {
     var score: Int {
         switch self {
@@ -52,24 +60,22 @@ extension HandRank {
 // MARK: Game State
 
 struct DiceGameState {
-    //var dice: [DiceFace] = Array(repeating: .blank, count: 5)
-    var dice: [Die] = (0..<5).map { _ in Die(face: DiceFace.validFaces.randomElement()!) }
-
+    var dice: [Die]
     var gameState: GameState = .idle
     var handRank: HandRank = .noHand
     var score: Int = 0
     var round: Int = 0
     
-    mutating func reset() {
-        self.score = 0
-        self.round = 0
+    init() {
+        let initialDice = (0..<5).map { _ in Die(face: DiceFace.allCases.randomElement()!) }
+        self.dice = initialDice
+        self.handRank = PokerHandEvaluator.evaluate(initialDice.map { $0.face })
     }
-
-    mutating func rollDice() {
-        
+    
+    mutating func rollDice() {        
         for i in dice.indices {
             if !dice[i].isHeld {
-                dice[i].face = DiceFace.validFaces.randomElement()!
+                dice[i].face = DiceFace.allCases.randomElement()!
             }
         }
         
@@ -86,5 +92,9 @@ struct DiceGameState {
     }
     
     
+    mutating func reset() {
+        self.score = 0
+        self.round = 0
+    }
 
 }

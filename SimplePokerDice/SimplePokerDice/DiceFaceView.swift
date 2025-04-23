@@ -8,29 +8,30 @@
 
 import SwiftUI
 
-struct Die: Identifiable {
-    let id = UUID()
-    var face: DiceFace
-    var isHeld: Bool = false
-}
-
 enum DiceFace: Int, CaseIterable {
-    case nineClubs, nineDiamonds, jack, queen, king, aceSpades
-    
-    var rankValue: Int {
-       switch self {
-       case .nineClubs, .nineDiamonds: return 9
-       case .jack: return 11
-       case .queen: return 12
-       case .king: return 13
-       case .aceSpades: return 14
-       }
-   }
+    case nine = 9, ten, jack, queen, king, ace
 }
 
 extension DiceFace {
-    static var validFaces: [DiceFace] {
-        return allCases
+    var symbol: String {
+       switch self {
+       case .nine: return "9.circle"
+       case .ten: return "10.circle"
+       case .jack: return "j.circle.fill"
+       case .queen: return "q.circle.fill"
+       case .king: return "k.circle.fill"
+       case .ace: return "a.circle.fill"
+       }
+    }
+    var label: String {
+        switch self {
+            case .nine: return "9"
+            case .ten: return "10"
+            case .jack: return "J"
+            case .queen: return "Q"
+            case .king: return "K"
+            case .ace: return "A"
+        }
     }
 }
 
@@ -74,13 +75,13 @@ struct DiceFaceView: View {
 
     var body: some View {
         VStack(spacing: 4.0) {
-            Image(systemName: faceSymbol)
+            Image(systemName: face.symbol)
                             .resizable()
                             .scaledToFit()
                             .frame(height: 30)
                             .padding(.top, 4)
             
-            Text(faceLabel)
+            Text(face.label)
                            .font(.system(size: 18, weight: .bold))
                            .minimumScaleFactor(0.5) // Shrinks text if needed
                            .lineLimit(1)
@@ -95,26 +96,5 @@ struct DiceFaceView: View {
             axis: (x: 0, y: 1, z: 0)
         )
         .animation(.easeInOut(duration: 0.5), value: isRolling)
-    }
-
-    private var faceSymbol: String {
-        switch face {
-        case .nineClubs: return "suit.club.fill"
-        case .nineDiamonds: return "suit.diamond.fill"
-        case .jack: return "j.circle.fill"
-        case .queen: return "q.circle.fill"
-        case .king: return "k.circle.fill"
-        case .aceSpades: return "suit.spade.fill"
-        }
-    }
-
-    private var faceLabel: String {
-        switch face {
-        case .nineClubs, .nineDiamonds: return "9"
-        case .jack: return "J"
-        case .queen: return "Q"
-        case .king: return "K"
-        case .aceSpades: return "A"
-        }
     }
 }
