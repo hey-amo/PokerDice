@@ -88,6 +88,9 @@ struct DiceGameState {
     mutating func toggleHold(for dieID: UUID) {
         if let index = dice.firstIndex(where: { $0.id == dieID }) {
             dice[index].isHeld.toggle()
+            if dice[index].isHeld {
+               print("\nHeld die at position [\(index)]")
+            }
         }
     }
     

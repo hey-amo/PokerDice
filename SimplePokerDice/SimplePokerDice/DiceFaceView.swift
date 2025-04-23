@@ -75,12 +75,13 @@ struct DiceFaceView: View {
 
     var body: some View {
         VStack(spacing: 4.0) {
+            // Symbol
             Image(systemName: face.symbol)
                             .resizable()
                             .scaledToFit()
                             .frame(height: 30)
                             .padding(.top, 4)
-            
+            // Label
             Text(face.label)
                            .font(.system(size: 18, weight: .bold))
                            .minimumScaleFactor(0.5) // Shrinks text if needed
@@ -90,7 +91,12 @@ struct DiceFaceView: View {
         }
         .padding(8.0)
         .frame(width: 60, height: 80)
-        .background(RoundedRectangle(cornerRadius: 10).stroke())
+        .background(isHeld ? Color.blue.opacity(0.2) : Color.clear)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(isHeld ? Color.blue : Color.black, lineWidth: isHeld ? 4 : 1)
+        )
+        //.background(RoundedRectangle(cornerRadius: 10).stroke())
         .rotation3DEffect(
             .degrees(isRolling ? 360 : 0),
             axis: (x: 0, y: 1, z: 0)
