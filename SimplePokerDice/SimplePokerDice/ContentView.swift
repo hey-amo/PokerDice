@@ -14,7 +14,7 @@ struct ContentView: View {
 
     var body: some View {
             VStack(spacing: 20) {
-                Text("Poker Dice").font(.largeTitle).bold()
+                Text("Simple Poker Dice").font(.largeTitle).bold()
 
                 HStack(spacing: 12) {
                     ForEach(Array(gameState.dice.enumerated()), id: \.1.id) { index, die in
