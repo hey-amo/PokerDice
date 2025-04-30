@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var rollingDiceIDs: Set<UUID> = []
 
     var body: some View {
+    
             VStack(spacing: 20) {
                 Text("Simple Poker Dice").font(.largeTitle).bold()
 
@@ -45,9 +46,14 @@ struct ContentView: View {
                 .foregroundColor(.white)
                 .cornerRadius(8)
 
-                Text("Hand: \(gameState.handRank.description)")
-                Text("Score: \(gameState.score)")
-                Text("Round: \(gameState.round)")
+                Text("Hand: \(gameState.handRank.description)").padding(20)
+                
+                HStack(spacing:180) {
+                    Text("Score: \(gameState.score)")
+                        .multilineTextAlignment(.leading)
+                    Text("Round: \(gameState.round)")
+                        .multilineTextAlignment(.leading)
+                }.padding(20)
             }
             .padding()
         }
