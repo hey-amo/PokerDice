@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  GameView.swift
 //  SimplePokerDice
 //
 //  Created by Amarjit on 22/04/2025.
@@ -7,12 +7,14 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct GameView: View {
     @State private var gameState = DiceGameState()
     @State private var isRolling = false
     @State private var rollingDiceIDs: Set<UUID> = []
 
     var body: some View {
+        
+        TopBarView()
     
             VStack(spacing: 20) {
                 Text("Simple Poker Dice").font(.largeTitle).bold()
@@ -62,5 +64,5 @@ struct ContentView: View {
 
 
 #Preview {
-    ContentView()
+    GameView()
 }
