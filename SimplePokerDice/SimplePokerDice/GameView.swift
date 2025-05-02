@@ -25,6 +25,10 @@ struct GameView: View {
                 VStack(spacing: 20) {
                     Spacer()
                     
+                    // Pass the gameState as an environment object
+                    ScoringView()
+                        .environmentObject(gameState)
+                    
                     Text("Simple Poker Dice")
                         .font(.largeTitle)
                         .bold()
@@ -45,48 +49,59 @@ struct GameView: View {
                         }
                     }
                     
-                    Button("Roll Dice") {
-                        // Determine which dice will animate (i.e., not held)
-                        rollingDiceIDs = Set(gameState.dice.filter { !$0.isHeld }.map { $0.id })
-                        
-                        isRolling = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            gameState.rollDice()
-                            isRolling = false
-                            rollingDiceIDs.removeAll()
+                    if (gameState.rollsRemaining > 0) {
+                        Button("Roll Dice") {
+                            // Determine which dice will animate (i.e., not held)
+                            rollingDiceIDs = Set(gameState.dice.filter { !$0.isHeld }.map { $0.id })
+                            
+                            isRolling = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                gameState.rollDice()
+                                isRolling = false
+                                rollingDiceIDs.removeAll()
+                            }
                         }
-                    }
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                    .disabled(gameState.rollsRemaining == 0)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .disabled(gameState.rollsRemaining == 0)
+                    } else {
+                        // Play again?
+                        Button("Play Again") {
+                           gameState.resetGame()
+                       }
+                       .padding()
+                       .background(Color.green)
+                       .foregroundColor(.white)
+                       .cornerRadius(8)
+                    } // endif
                     
                     Text("Hand: \(gameState.handRank.description)").padding(20)
                     Text("Rolls Remaining: \(gameState.rollsRemaining)")
                         .font(.headline)
                         .foregroundColor(gameState.rollsRemaining == 0 ? .red : .primary)
                                         
-                    HStack(spacing:180) {
-                        Text("Score: \(gameState.score)")
-                            .multilineTextAlignment(.leading)
-                        Text("Round: \(gameState.round)")
-                            .multilineTextAlignment(.leading)
-                    }.padding(20)
+                    
 
-                    // Play again?
-                    if (gameState.rollsRemaining == 0) {
-                         Button("Play Again") {
-                            gameState.resetGame()
-                        }
-                        .padding()
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                    }
                 }
             }// end: scrollview
         }
+    }
+}
+
+// Move ScoringView to be a separate view in the same file
+struct ScoringView: View {
+    // Use EnvironmentObject to access the gameState
+    @EnvironmentObject var gameState: DiceGameState
+    
+    var body: some View {
+        HStack(spacing:180) {
+            Text("Score: \(gameState.score)")
+                .multilineTextAlignment(.leading)
+            Text("Round: \(gameState.round)")
+                .multilineTextAlignment(.leading)
+        }.padding(20)
     }
 }
 
