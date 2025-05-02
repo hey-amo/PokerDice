@@ -7,23 +7,31 @@
 
 import SwiftUI
 
-enum Page: Int {
-    case mainMenu, play
+enum Page: Int, Identifiable {
+    case mainMenu, game
+    
+    var id: Int { self.rawValue }
+    
+    var title: String {
+        switch self {
+        case .mainMenu: return "Main Menu"
+        case .game: return "Game"
+        }
+    }
 }
 
 enum Modal: Identifiable {
     case settings
-    case menu
     
     var id: String {
         switch self {
         case .settings: return "settings"
-        case .menu: return "menu"
         }
     }
 }
 
 class Router: ObservableObject {
+    @Published var currentPage: Page = .mainMenu
     @Published var activeModal: Modal?
     @Published var isAnimating: Bool = false
     
@@ -31,6 +39,23 @@ class Router: ObservableObject {
     
     private init() {}
     
+    // Navigation methods
+    func navigate(to page: Page) {
+        // Don't navigate if animations are playing
+        guard !isAnimating else { return }
+        
+        withAnimation {
+            currentPage = page
+        }
+    }
+    
+    func goBack() {
+        // Logic for going back to previous page
+        // For now, just go to main menu
+        navigate(to: .mainMenu)
+    }
+    
+    // Modal methods
     func showModal(_ modal: Modal) {
         // Don't show modal if animations are playing
         guard !isAnimating else { return }

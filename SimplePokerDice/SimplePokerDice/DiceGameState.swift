@@ -59,7 +59,7 @@ extension HandRank {
 
 // MARK: Game State
 
-struct DiceGameState {
+class DiceGameState: ObservableObject {
     var dice: [Die]
     var gameState: GameState = .idle
     var handRank: HandRank = .noHand
@@ -72,7 +72,7 @@ struct DiceGameState {
         self.handRank = PokerHandEvaluator.evaluate(initialDice.map { $0.face })
     }
     
-    mutating func rollDice() {        
+    func rollDice() {
         for i in dice.indices {
             if !dice[i].isHeld {
                 dice[i].face = DiceFace.allCases.randomElement()!
@@ -85,7 +85,7 @@ struct DiceGameState {
         round += 1
     }
     
-    mutating func toggleHold(for dieID: UUID) {
+    func toggleHold(for dieID: UUID) {
         if let index = dice.firstIndex(where: { $0.id == dieID }) {
             dice[index].isHeld.toggle()
             if dice[index].isHeld {
@@ -93,9 +93,9 @@ struct DiceGameState {
             }
         }
     }
+
     
-    
-    mutating func reset() {
+    func reset() {
         self.score = 0
         self.round = 0
     }

@@ -13,7 +13,8 @@ struct TopBarView: View {
     var body: some View {
         HStack {
             Button(action: {
-                router.showModal(.menu)
+                print("Btn: Pressed hamburger menu")
+                //router.showModal(.menu)
             }) {
                 Image(systemName: "line.3.horizontal")
                     .foregroundColor(.primary)
@@ -24,6 +25,7 @@ struct TopBarView: View {
             Spacer()
             
             Button(action: {
+                print("Btn: Pressed gear")
                 router.showModal(.settings)
             }) {
                 Image(systemName: "gear")
@@ -33,7 +35,7 @@ struct TopBarView: View {
             .padding(.horizontal)
         }
         .frame(height: 44)
-        .background(Color(UIColor.systemBackground))
+        .background(Color(.systemBackground))
     }
 }
 
