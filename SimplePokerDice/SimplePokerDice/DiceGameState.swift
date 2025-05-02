@@ -60,11 +60,13 @@ extension HandRank {
 // MARK: Game State
 
 class DiceGameState: ObservableObject {
-    var dice: [Die]
-    var gameState: GameState = .idle
-    var handRank: HandRank = .noHand
-    var score: Int = 0
-    var round: Int = 0
+    @Published var dice: [Die]
+    @Published var gameState: GameState = .idle
+    @Published var handRank: HandRank = .noHand
+    @Published var score: Int = 0
+    @Published var round: Int = 0
+    @Published var rollsRemaining: Int = 3
+
     
     init() {
         let initialDice = (0..<5).map { _ in Die(face: DiceFace.allCases.randomElement()!) }
@@ -73,6 +75,9 @@ class DiceGameState: ObservableObject {
     }
     
     func rollDice() {
+        // Only roll is any rolls remain
+        guard rollsRemaining > 0 else { return }
+
         for i in dice.indices {
             if !dice[i].isHeld {
                 dice[i].face = DiceFace.allCases.randomElement()!
@@ -83,6 +88,13 @@ class DiceGameState: ObservableObject {
         handRank = PokerHandEvaluator.evaluate(dice.map { $0.face })
         score += handRank.score
         round += 1
+
+        // Reduce rolls remaining
+        rollsRemaining -= 1
+
+        if rollsRemaining == 0 {
+            gameState = .evaluate
+        }
     }
     
     func toggleHold(for dieID: UUID) {
@@ -95,9 +107,12 @@ class DiceGameState: ObservableObject {
     }
 
     
-    func reset() {
-        self.score = 0
-        self.round = 0
+    func resetGame() {
+        let initialDice = (0..<5).map { _ in Die(face: DiceFace.allCases.randomElement()!) }
+        self.dice = initialDice
+        self.handRank = PokerHandEvaluator.evaluate(initialDice.map { $0.face })
+        self.rollsRemaining = 3
+        self.gameState = .idle
     }
 
 }

@@ -9,7 +9,7 @@ import SwiftUI
 import UIKit
 
 struct GameView: View {
-    @State private var gameState = DiceGameState()
+    @StateObject private var gameState = DiceGameState()
     @State private var isRolling = false
     @State private var rollingDiceIDs: Set<UUID> = []
 
@@ -25,7 +25,9 @@ struct GameView: View {
                 VStack(spacing: 20) {
                     Spacer()
                     
-                    Text("Simple Poker Dice").font(.largeTitle).bold()
+                    Text("Simple Poker Dice")
+                        .font(.largeTitle)
+                        .bold()
                                         
                     HStack(spacing: 12) {
                         ForEach(Array(gameState.dice.enumerated()), id: \.1.id) { index, die in
@@ -35,7 +37,10 @@ struct GameView: View {
                                 isRolling: isRolling && rollingDiceIDs.contains(die.id)
                             )
                             .onTapGesture {
-                                gameState.toggleHold(for: die.id)
+                                // only allow hold if rollsRemain
+                                if (gameState.rollsRemaining > 0) {
+                                    gameState.toggleHold(for: die.id)
+                                }
                             }
                         }
                     }
@@ -55,15 +60,30 @@ struct GameView: View {
                     .background(Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(8)
+                    .disabled(gameState.rollsRemaining == 0)
                     
                     Text("Hand: \(gameState.handRank.description)").padding(20)
-                    
+                    Text("Rolls Remaining: \(gameState.rollsRemaining)")
+                        .font(.headline)
+                        .foregroundColor(gameState.rollsRemaining == 0 ? .red : .primary)
+                                        
                     HStack(spacing:180) {
                         Text("Score: \(gameState.score)")
                             .multilineTextAlignment(.leading)
                         Text("Round: \(gameState.round)")
                             .multilineTextAlignment(.leading)
                     }.padding(20)
+
+                    // Play again?
+                    if (gameState.rollsRemaining == 0) {
+                         Button("Play Again") {
+                            gameState.resetGame()
+                        }
+                        .padding()
+                        .background(Color.green)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                    }
                 }
             }// end: scrollview
         }
