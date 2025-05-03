@@ -94,9 +94,7 @@ struct GameView: View {
                        .cornerRadius(8)
                     } // endif
                     
-                                        
                     
-
                 }
             }// end: scrollview
         }
