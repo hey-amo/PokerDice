@@ -66,7 +66,7 @@ struct DiceFaceView: View {
             RoundedRectangle(cornerRadius: 10)
                 .stroke(isHeld ? Color.blue : Color.black, lineWidth: isHeld ? 4 : 1)
         )
-        //.background(RoundedRectangle(cornerRadius: 10).stroke())
+        //.shadow(radius: 10)
         .rotation3DEffect(
             .degrees(isRolling ? 360 : 0),
             axis: (x: 0, y: 1, z: 0)
@@ -97,6 +97,7 @@ struct CroppedDiceFaceView: View {
                     Image(uiImage: UIImage(cgImage: cropped))
                         .resizable()
                         .aspectRatio(contentMode: .fit)
+                    
                 }
             } else {
                 Color.clear

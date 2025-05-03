@@ -7,7 +7,7 @@
 import Foundation
 
 enum GameState: Int {
-    case idle, roll, evaluate
+    case idle, roll, evaluate, placeBet, payout
 }
 
 extension GameState: CustomStringConvertible {
@@ -16,6 +16,8 @@ extension GameState: CustomStringConvertible {
         case .idle: return "IDLE"
         case .roll: return "ROLLING"
         case .evaluate: return "EVALUATING"
+        case .placeBet: return "PLACEBET"
+        case .payout: return "MAKEPAYOUT"
         }
     }
 }
@@ -55,6 +57,18 @@ extension HandRank {
         case .noHand: return 0
         }
     }
+    var multiplier: Double {
+        switch self {
+        case .fiveOfAKind: return 10.0
+        case .fourOfAKind: return 5.0
+        case .fullHouse: return 3.0
+        case .threeOfAKind: return 1.5
+        case .twoPair: return 1.2
+        case .onePair: return 1.0
+        case .highCard: return 0.5
+        case .noHand: return 0
+        }
+    }
 }
 
 // MARK: Game State
@@ -66,12 +80,18 @@ class DiceGameState: ObservableObject {
     @Published var score: Int = 0
     @Published var round: Int = 0
     @Published var rollsRemaining: Int = 3
+    @Published var playerChips: Int
+    @Published var currentBet: Int
+    @Published var anteBet: Int
 
     
     init() {
         let initialDice = (0..<5).map { _ in Die(face: DiceFace.allCases.randomElement()!) }
         self.dice = initialDice
         self.handRank = PokerHandEvaluator.evaluate(initialDice.map { $0.face })
+        self.playerChips = 5
+        self.currentBet = 0
+        self.anteBet = 0
     }
     
     func rollDice() {
