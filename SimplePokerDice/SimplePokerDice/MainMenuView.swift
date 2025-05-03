@@ -11,18 +11,17 @@ struct MainMenuView: View {
     @ObservedObject private var router = Router.shared
     
     var body: some View {
-        VStack(spacing: 30) {
+        VStack(spacing:30) {
+            Spacer()
             Text("Simple Poker Dice")
                 .font(.largeTitle)
                 .bold()
                 .padding(.top, 50)
             
-            Spacer()
-            
             Button(action: {
                 router.navigate(to: .game)
             }) {
-                Text("Play Game")
+                Text("Play")
                     .font(.title2)
                     .bold()
                     .foregroundColor(.white)
