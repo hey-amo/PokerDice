@@ -48,9 +48,24 @@ struct GameView: View {
                             }
                         }
                     }
+                                        
+                    Text("Hand: \(gameState.handRank.description)")
+                        .frame(width:350, height:50)
+                        .font(.headline)
+                        .border(.blue)
+                        .padding(10)
                     
                     if (gameState.rollsRemaining > 0) {
-                        Button("Roll Dice") {
+                        Text("ℹ️ Select dice you wish to keep")
+                            .font(.callout)
+                            .fontWeight(.medium)
+                    } else {
+                        Text("ℹ️ Game over: Play again?")
+                            .font(.callout)
+                    }
+                    
+                    if (gameState.rollsRemaining > 0) {
+                        Button("Roll (\(gameState.rollsRemaining))") {
                             // Determine which dice will animate (i.e., not held)
                             rollingDiceIDs = Set(gameState.dice.filter { !$0.isHeld }.map { $0.id })
                             
@@ -61,6 +76,7 @@ struct GameView: View {
                                 rollingDiceIDs.removeAll()
                             }
                         }
+                        .frame(width: 250)
                         .padding()
                         .background(Color.blue)
                         .foregroundColor(.white)
@@ -71,16 +87,13 @@ struct GameView: View {
                         Button("Play Again") {
                            gameState.resetGame()
                        }
+                        .frame(width: 250)
                        .padding()
                        .background(Color.green)
                        .foregroundColor(.white)
                        .cornerRadius(8)
                     } // endif
                     
-                    Text("Hand: \(gameState.handRank.description)").padding(20)
-                    Text("Rolls Remaining: \(gameState.rollsRemaining)")
-                        .font(.headline)
-                        .foregroundColor(gameState.rollsRemaining == 0 ? .red : .primary)
                                         
                     
 

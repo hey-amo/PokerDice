@@ -97,6 +97,7 @@ struct CroppedDiceFaceView: View {
                     Image(uiImage: UIImage(cgImage: cropped))
                         .resizable()
                         .aspectRatio(contentMode: .fit)
+                    
                 }
             } else {
                 Color.clear
