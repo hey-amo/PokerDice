@@ -27,7 +27,3 @@ struct TopBarView: View {
         .background(Color(.systemBackground))
     }
 }
-
-#Preview {
-    TopBarView()
-}

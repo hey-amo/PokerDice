@@ -29,4 +29,8 @@ struct PokerHandEvaluator {
         default: return .noHand
         }
     }
+    
+    static func calculatePayout(bet: Int, handRank: HandRank) -> Int {
+        return Int(Double(bet) * handRank.multiplier)
+    }
 }
