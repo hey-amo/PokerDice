@@ -77,18 +77,31 @@ struct DiceFaceView: View {
 
 
 
-/// Cropped Dice face view
+/// Cropped Dice face view for using the the Dice asset
 struct CroppedDiceFaceView: View {
-    let index: Int // 0 through 6
+    let index: Int
 
     var body: some View {
-        GeometryReader { geometry in
-            if let image = UIImage(named: "Dice"),
-               let cgImage = image.cgImage {
+        if let image = UIImage(named: "Dice"),
+           let cgImage = image.cgImage {
 
-                let totalWidth = CGFloat(cgImage.width)
-                let frameWidth = totalWidth / 7.0
-                let frameHeight = CGFloat(cgImage.height)
+            let totalWidth = CGFloat(cgImage.width)
+            let frameWidth = totalWidth / 7.0
+            let frameHeight = CGFloat(cgImage.height)
+
+            if let cropped = cgImage.cropping(to: CGRect(x: CGFloat(index) * frameWidth,
+                                                         y: 0,
+                                                         width: frameWidth,
+                                                         height: frameHeight)) {
+                Image(uiImage: UIImage(cgImage: cropped))
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+            }
+        } else {
+            Color.clear
+        }
+    }
+}
 
                 if let cropped = cgImage.cropping(to: CGRect(x: CGFloat(index) * frameWidth,
                                                              y: 0,
