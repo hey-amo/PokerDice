@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import UIKit
 
 struct GameView: View {
     @StateObject private var gameState = DiceGameState()
@@ -31,6 +30,7 @@ struct GameView: View {
                                         
                     HStack(spacing: 12) {
                         ForEach(Array(gameState.dice.enumerated()), id: \.1.id) { index, die in
+                            
                             DiceFaceView(
                                 face: die.face,
                                 isHeld: die.isHeld,

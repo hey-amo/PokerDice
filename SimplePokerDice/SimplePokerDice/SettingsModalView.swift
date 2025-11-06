@@ -7,26 +7,20 @@
 
 import SwiftUI
 
+struct SettingsViewModel {
+    let sfx: Bool
+    let darkMode: Bool
+}
+
 struct SettingsModalView: View {
-    @ObservedObject private var router = Router.shared
-    
+        
     var body: some View {
         VStack(spacing: 20) {
             Text("Settings")
                 .font(.title)
                 .bold()
             
-            // Add your settings options here
-            Toggle("Sound Effects", isOn: .constant(true))
-            Toggle("Vibration", isOn: .constant(true))
-            
-            Button("Close") {
-                router.dismissModal()
-            }
-            .padding()
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(8)
+            Toggle("Sounds", isOn: .constant(true))
         }
         .padding()
         .frame(width: 300, height: 250)
