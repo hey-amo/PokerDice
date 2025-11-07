@@ -6,8 +6,11 @@
 //
 
 import SwiftUI
+import GameKit
 
 struct GameView: View {
+    //@EnvironmentObject var gameCenter: GameCenterManager
+
     @StateObject private var gameState = DiceGameState()
     @State private var isRolling = false
     @State private var rollingDiceIDs: Set<UUID> = []
@@ -60,7 +63,7 @@ struct GameView: View {
                             .font(.callout)
                             .fontWeight(.medium)
                     } else {
-                        Text("ℹ️ Game over: Play again?")
+                        Text("ℹ️ You scored: \(gameState.score). Play again?")
                             .font(.callout)
                     }
                     
@@ -76,12 +79,22 @@ struct GameView: View {
                                 rollingDiceIDs.removeAll()
                             }
                         }
-                        .frame(width: 250)
+                        .frame(minWidth: 250)
                         .padding()
                         .background(Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(8)
                         .disabled(gameState.rollsRemaining == 0)
+                        
+                        Button("Skip") {
+                            gameState.skipRolling()
+                        }
+                        .frame(minWidth: 250)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        
                     } else {
                         // Play again?
                         Button("Play Again") {
@@ -109,9 +122,11 @@ struct ScoringView: View {
     var body: some View {
         HStack(spacing:180) {
             Text("Score: \(gameState.score)")
+                .fontWeight(.bold)
                 .multilineTextAlignment(.leading)
             Text("Round: \(gameState.round)")
                 .multilineTextAlignment(.leading)
+                .fontWeight(.bold)
         }.padding(20)
     }
 }

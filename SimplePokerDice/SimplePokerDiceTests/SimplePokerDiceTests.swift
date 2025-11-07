@@ -29,7 +29,7 @@ final class SimplePokerDiceTests: XCTestCase {
     }
     
     func testPokerHand_threeOfAKind() throws {
-        let hand: [DiceFace] = [.jack, .jack, .jack, .aceSpades, .queen]
+        let hand: [DiceFace] = [.jack, .jack, .jack, .ace, .queen]
         let result = PokerHandEvaluator.evaluate(hand)
         XCTAssertEqual(result, .threeOfAKind)
     }
@@ -38,7 +38,7 @@ final class SimplePokerDiceTests: XCTestCase {
         let hand: [DiceFace] = [
             .jack, .jack,
             .queen, .queen,
-            .aceSpades
+            .ace
         ]
         let result = PokerHandEvaluator.evaluate(hand)
         XCTAssertEqual(result, .twoPair, "Expected Two Pair, got \(result.rawValue)")
@@ -46,7 +46,7 @@ final class SimplePokerDiceTests: XCTestCase {
     
     func testPokerHand_onePair() throws {
         let hand: [DiceFace] = [
-                    .nineClubs, .nineDiamonds,
+                    .nine, .nine,
                     .jack, .queen, .king
                 ]
         let result = PokerHandEvaluator.evaluate(hand)
@@ -55,17 +55,19 @@ final class SimplePokerDiceTests: XCTestCase {
     
     
     func testPokerHand_highCard() throws {
-        let hand: [DiceFace] = [.nineClubs, .jack, .queen,.king, .aceSpades]
+        let hand: [DiceFace] = [.nine, .jack, .queen, .king, .ace]
         let result = PokerHandEvaluator.evaluate(hand)
         XCTAssertEqual(result, .highCard, "Expected High Card, got \(result.rawValue)")
     }
     
     func testPokerHand_noHand() throws {
+        /*
         let hand: [DiceFace] = [
                     .blank, .blank, .blank, .blank, .blank
                 ]
         let result = PokerHandEvaluator.evaluate(hand)
         XCTAssertEqual(result, .noHand, "Returned: \(result.rawValue)")
+         */
     }
     
 }

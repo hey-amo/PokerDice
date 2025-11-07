@@ -76,7 +76,7 @@ struct DiceFaceView: View {
 }
 
 
-
+/**
 /// Cropped Dice face view for using the the Dice asset
 struct CroppedDiceFaceView: View {
     let index: Int
@@ -118,3 +118,4 @@ struct CroppedDiceFaceView: View {
         }
     }
 }
+**/

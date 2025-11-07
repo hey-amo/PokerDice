@@ -116,7 +116,24 @@ class DiceGameState: ObservableObject {
             gameState = .evaluate
         }
     }
-    
+        
+    // If the player just wants to skip rolling altogether
+    func skipRolling() {
+        guard rollsRemaining > 0 else { return }
+        
+        // Evaulate and update score
+        handRank = PokerHandEvaluator.evaluate(dice.map { $0.face })
+        score += handRank.score
+        round += 1
+
+        // Reduce rolls remaining
+        rollsRemaining -= 1
+
+        if rollsRemaining == 0 {
+            gameState = .evaluate
+        }
+    }
+
     func toggleHold(for dieID: UUID) {
         if let index = dice.firstIndex(where: { $0.id == dieID }) {
             dice[index].isHeld.toggle()

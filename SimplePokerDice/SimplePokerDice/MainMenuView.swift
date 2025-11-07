@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MainMenuView: View {
-    @ObservedObject private var router = Router.shared
+    
     
     var body: some View {
         VStack(spacing:30) {
@@ -19,7 +19,7 @@ struct MainMenuView: View {
                 .padding(.top, 50)
             
             Button(action: {
-                router.navigate(to: .game)
+                // Do something
             }) {
                 Text("Play")
                     .font(.title2)
@@ -31,7 +31,7 @@ struct MainMenuView: View {
             }
             
             Button(action: {
-                router.showModal(.settings)
+                // Do something
             }) {
                 Text("Settings")
                     .font(.title2)
