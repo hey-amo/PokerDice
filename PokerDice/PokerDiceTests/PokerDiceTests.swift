@@ -148,6 +148,106 @@ final class PokerDiceTests: XCTestCase {
         XCTAssertThrowsError(try game.roll(state))
         print("Invalid transitions and a fourth roll were rejected")
     }
+
+    @MainActor
+    func testSoloViewModelBlocksSkeletonAndResetsOnlyAfterStarting() async {
+        print("Checking solo screen initial and reset states")
+        let viewModel = PokerDiceViewModel(
+            diceRoller: StubDiceRoller(rolls: [[.ace, .ace, .king, .queen, .nine]]),
+            rollAnimationDuration: .zero
+        )
+
+        XCTAssertFalse(viewModel.canReset)
+        XCTAssertFalse(viewModel.isDieEnabled(0))
+        viewModel.resetGame()
+        XCTAssertEqual(viewModel.playerHand.rollsUsed, 0)
+
+        await viewModel.rollDice()
+        XCTAssertTrue(viewModel.canReset)
+        XCTAssertTrue(viewModel.isDieEnabled(0))
+        viewModel.toggleHold(at: 0)
+        XCTAssertTrue(viewModel.playerHand.heldDice.contains(0))
+        viewModel.resetGame()
+        XCTAssertFalse(viewModel.hasStarted)
+        XCTAssertNil(viewModel.lastRollMessage)
+        print("Skeleton dice stayed inert; holding and reset worked after the first roll")
+    }
+
+    @MainActor
+    func testSoloViewModelBlocksControlsWhileRollingAndFinishesHand() async {
+        print("Checking roll animation locks and solo hand completion")
+        let viewModel = PokerDiceViewModel(
+            diceRoller: StubDiceRoller(rolls: [
+                [.ace, .ace, .king, .queen, .nine],
+                [.ace, .ace, .king, .queen, .nine]
+            ]),
+            rollAnimationDuration: .zero
+        )
+        await viewModel.rollDice()
+        XCTAssertTrue(viewModel.isDieEnabled(0))
+
+        viewModel.finishHand()
+        XCTAssertTrue(viewModel.isFinished)
+        XCTAssertFalse(viewModel.canRoll)
+        XCTAssertFalse(viewModel.isDieEnabled(0))
+        XCTAssertTrue(viewModel.message.contains("One Pair"))
+        print("Early finish showed the final hand and disabled further actions")
+    }
+
+    @MainActor
+    func testSoloViewModelDisablesActionsDuringRoll() async {
+        print("Checking controls are locked during an active roll")
+        let viewModel = PokerDiceViewModel(
+            diceRoller: StubDiceRoller(rolls: [
+                [.ace, .ace, .king, .queen, .nine],
+                [.ace, .ace, .king, .queen, .nine]
+            ]),
+            rollAnimationDuration: .milliseconds(100)
+        )
+        await viewModel.rollDice()
+        XCTAssertTrue(viewModel.canReset)
+
+        let nextRoll = Task { await viewModel.rollDice() }
+        await Task.yield()
+        XCTAssertTrue(viewModel.isRolling)
+        XCTAssertFalse(viewModel.canRoll)
+        XCTAssertFalse(viewModel.canReset)
+        XCTAssertFalse(viewModel.isDieEnabled(0))
+
+        await nextRoll.value
+        XCTAssertFalse(viewModel.isRolling)
+        print("Reroll, reset, and hold controls were blocked until rolling ended")
+    }
+
+    @MainActor
+    func testSoloViewModelCompletesOnThirdRollAndBlocksAllHeldDice() async {
+        print("Checking automatic completion after three rolls")
+        let viewModel = PokerDiceViewModel(
+            diceRoller: StubDiceRoller(rolls: [
+                [.ace, .ace, .king, .queen, .nine],
+                [.nine],
+                [.nine]
+            ]),
+            rollAnimationDuration: .zero
+        )
+
+        await viewModel.rollDice()
+        for index in 0..<5 {
+            viewModel.toggleHold(at: index)
+        }
+        XCTAssertFalse(viewModel.canRoll)
+        XCTAssertTrue(viewModel.canFinish)
+
+        viewModel.toggleHold(at: 0)
+        await viewModel.rollDice()
+        await viewModel.rollDice()
+
+        XCTAssertEqual(viewModel.playerHand.rollsUsed, 3)
+        XCTAssertTrue(viewModel.isFinished)
+        XCTAssertFalse(viewModel.canRoll)
+        XCTAssertTrue(viewModel.message.contains("One Pair"))
+        print("Third roll finalized the hand and showed its category")
+    }
 }
 
 private final class StubDiceRoller: DiceRolling {

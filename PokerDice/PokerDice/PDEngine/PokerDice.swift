@@ -57,6 +57,19 @@ public enum HandCategory: Int, CaseIterable, Comparable, Sendable {
     public static func < (lhs: HandCategory, rhs: HandCategory) -> Bool {
         lhs.rawValue < rhs.rawValue
     }
+
+    public var displayName: String {
+        switch self {
+        case .highCard: "High Card"
+        case .onePair: "One Pair"
+        case .twoPair: "Two Pair"
+        case .threeOfAKind: "Three of a Kind"
+        case .straight: "Straight"
+        case .fullHouse: "Full House"
+        case .fourOfAKind: "Four of a Kind"
+        case .fiveOfAKind: "Five of a Kind"
+        }
+    }
 }
 
 public struct PokerHand: Equatable, Sendable {

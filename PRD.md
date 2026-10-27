@@ -8,22 +8,22 @@ This document defines the rules and a small, testable first version of the game.
 
 ## 2. Product goal
 
-Deliver a clear, fair, and enjoyable Poker Dice game that:
+Deliver a clear, fair, and enjoyable single-player Poker Dice game that:
 
 - Explains the rules without requiring prior knowledge of the game.
 - Lets players roll, hold, and reroll dice with understandable feedback.
 - Evaluates every possible hand consistently.
-- Makes the outcome and winner of a game easy to understand.
+- Makes the hand result easy to understand.
 
 ## 3. MVP scope
 
-- One-device, local pass-and-play for two players.
-- A game consists of one hand for each player; each player gets up to three total rolls.
-- Players take turns privately managing their own hand.
-- The game compares the completed hands and declares a winner or a draw.
-- Players can start a new game after the result.
+- One local, single-player Poker Dice hand at a time.
+- The player gets up to three total rolls to make their best hand.
+- The player can hold any dice between rolls, finish early, or play all three rolls.
+- The game shows the final poker hand category; it does not compare the hand against an opponent.
+- The player can start another hand after the current hand has started or finished.
 
-Online play, accounts, tournaments, statistics, configurable house rules, and play against a computer are out of scope for the MVP.
+Multiplayer, accounts, tournaments, statistics, configurable house rules, and play against a computer are out of scope for the MVP.
 
 ## 4. Rules of Poker Dice
 
@@ -61,34 +61,26 @@ Hands are ranked from strongest to weakest:
 
 Five of a kind is possible because each die has the same six faces. There are no wraparound straights (for example, Ace-9-10-Jack-Queen is not a straight).
 
-### 4.4 Comparing hands and deciding a winner
+### 4.4 Evaluating the player's hand
 
-- A higher-ranked hand always beats a lower-ranked hand.
-- If hands have the same rank, compare the values that define that hand, highest first:
-  - Four/three/five of a kind: value of the matching group.
-  - Full house: value of the three-of-a-kind, then the pair.
-  - Straight: value of its highest die.
-  - Two pair: higher pair, lower pair, then the remaining die.
-  - One pair: pair, then the remaining dice in descending order.
-  - High card: all five dice in descending order.
-- If every comparison value is equal, the hands tie. The game declares a draw; neither player wins the hand.
+- Evaluate the five dice using the hand ranking in Section 4.3.
+- The hand category and its comparison values follow the ordering in Section 4.3; solo play does not compare the hand against an opponent.
+- Show the current hand category after a roll and the final hand category when the player finishes.
 
-### 4.5 Between players
+### 4.5 Completing a solo hand
 
-- Player 1 completes and confirms their hand before Player 2 begins.
-- The game should avoid exposing Player 1's final dice to Player 2 during Player 2's turn (for example, by showing a handoff screen).
-- Once both hands are final, show both hands, their ranked descriptions, and the winner or draw.
+- The player may finish after any roll.
+- The hand completes automatically after the third roll.
+- Once complete, dice cannot be held or rerolled until a new hand is started.
 
 ## 5. Gameplay flow
 
-1. **Start:** Show the game title and a clear action to start a two-player game.
-2. **Player handoff:** Identify whose turn it is and provide a handoff before showing that player's dice.
-3. **Roll:** Roll all five dice on the first roll. On subsequent rolls, roll only dice that are not held.
-4. **Hold selection:** Let the player toggle each die between held and rerolling. Clearly distinguish held dice.
-5. **Continue or finish:** Show the number of rolls used and remaining. Allow another roll when eligible; allow the player to finish early if desired.
-6. **Confirm hand:** Once the turn ends, show the player's final hand and pass control to the next player.
-7. **Result:** After both turns, show each player's hand, hand rank, and the outcome.
-8. **Replay:** Offer a new game that resets all dice, held states, roll counts, and result state.
+1. **Start:** Show the game title and a clear action to roll the dice. The first roll starts the hand.
+2. **Roll:** Roll all five dice on the first roll. On subsequent rolls, roll only dice that are not held.
+3. **Hold selection:** Let the player toggle each die between held and rerolling. Clearly distinguish held dice.
+4. **Continue or finish:** Show the number of rolls used and remaining. Allow another roll when eligible; allow the player to finish early.
+5. **Result:** Show the final hand and its category when the player finishes or uses all three rolls.
+6. **Replay:** Allow reset only after a hand has started. Resetting clears dice, held states, roll count, and result.
 
 ## 6. Functional requirements
 
@@ -99,21 +91,21 @@ Five of a kind is possible because each die has the same six faces. There are no
 - Reroll only unheld dice on later rolls.
 - Enforce a maximum of three rolls per player hand.
 - Evaluate a five-die hand into exactly one hand category and its comparison values.
-- Compare hands according to the ranking and tie-break rules in Section 4.
-- Keep game state transitions valid: a player cannot reroll a completed hand or act out of turn.
+- Keep game state transitions valid: a player cannot reroll a completed hand.
 - Keep randomness separate enough from hand evaluation and turn-state logic that tests can provide controlled rolls.
 
 ### User experience
 
-- Make it clear which player is active, which dice are held, and how many rolls remain.
+- Make it clear how many rolls have been used, which dice are held, and what the current hand is.
 - Do not allow a reroll when all dice are held or the hand is complete.
 - Provide accessible labels for dice and hold state; do not rely on color alone to communicate selection.
-- Clearly explain the final hand category and comparison result.
-- Starting a new game must not retain state from the previous game.
+- Clearly explain the final hand category.
+- Reset must be unavailable before the first roll and while dice are rolling.
+- Starting a new hand must not retain state from the previous game.
 
 ## 7. Quality requirements
 
-- Identical game states and dice values must always produce identical hand rankings and outcomes.
+- Identical dice values must always produce the same hand ranking.
 - The interface must remain usable with VoiceOver and standard Dynamic Type settings.
 - Dice controls and game actions must have clear labels and visible state.
 - The game should not require a network connection.
@@ -132,49 +124,40 @@ Tests below describe required coverage; they are not a claim that these tests al
 - Repeated values prevent a hand from being classified as a straight.
 - Invalid or incomplete hand input is rejected or handled according to the engine's chosen validation contract.
 
-### Hand comparison unit tests
-
-- Every category beats each category below it in the ranking.
-- Same-category hands use the specified tie-break values.
-- Pair and two-pair kickers are compared in the correct order.
-- A lower-ranked hand never wins due to a larger individual die.
-- Equal comparison values produce a draw.
-
 ### Turn and game-state tests
 
-- A new hand starts with five dice and zero rolls used.
-- The first roll rolls all five dice.
+- A new hand starts with five skeleton dice and zero rolls used.
+- The first roll reveals and rolls all five dice.
 - A later roll changes only unheld dice and preserves held dice.
 - A player can hold any number of dice, including zero and five.
 - A player cannot exceed three rolls.
 - Holding all dice prevents another roll.
-- Ending early finalizes the current hand.
-- Player 2 cannot act before Player 1 completes their hand.
-- The result is not available until both players' hands are final.
-- Starting a new game resets both players, dice, held states, roll counts, and result.
+- Early finish completes the current hand and prevents more rolls.
+- The result appears after the third roll or an early finish.
+- Starting a new game resets dice, held states, roll count, and result.
 
 ### UI and interaction tests
 
-- The correct active player and roll count are displayed.
+- The roll count is displayed and updated after each roll.
 - Tapping a die toggles its held state and the state is visibly accessible.
 - The roll action is disabled when no dice can be rerolled or the hand is complete.
-- The handoff screen appears between players and before revealing the next player's dice.
-- The result screen shows both final hands, their categories, and the correct outcome for win, loss, and draw.
+- Dice cannot be held before the first roll, while rolling, or after the hand is complete.
+- Reset is disabled before a hand starts and while dice are rolling.
+- The result shows the final dice and their category.
 - The replay action begins a clean game.
 
 ### Randomness and regression tests
 
-- Injected/deterministic dice results produce the expected hand and game result.
+- Injected/deterministic dice results produce the expected hand category.
 - Random rolls always produce five valid faces, each in the 9-to-Ace set.
-- Repeated evaluation of the same hand returns the same category and comparison values.
+- Repeated evaluation of the same hand returns the same category and tie-break values.
 
 ## 9. Acceptance criteria
 
 - A player can complete a turn using one, two, or three rolls.
 - Held dice are preserved while unheld dice are rerolled.
 - The game supports the full canonical ranking, including five of a kind and both straights.
-- Hand comparisons follow all specified tie-breakers and correctly identify draws.
-- A complete two-player game ends with a clear, correct result.
+- A solo hand ends after no more than three rolls and shows the correct hand category.
 - A new game starts without state carried over from the previous one.
 - The engine's core rules are covered by unit tests before release.
 
