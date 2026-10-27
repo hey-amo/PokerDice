@@ -1,35 +1,172 @@
-//
-//  PokerDiceTests.swift
-//  PokerDiceTests
-//
-//  Created by Amarjit on 27/10/2026.
-//
-
 import XCTest
+@testable import PokerDice
 
 final class PokerDiceTests: XCTestCase {
+    private let evaluator = PokerHandEvaluator()
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
+    func testEvaluatorRecognizesEveryHandCategory() throws {
+        print("Evaluating all Poker Dice hand categories")
+        let cases: [([DieFace], HandCategory)] = [
+            ([.ace, .ace, .ace, .ace, .ace], .fiveOfAKind),
+            ([.king, .king, .king, .king, .nine], .fourOfAKind),
+            ([.queen, .queen, .queen, .ten, .ten], .fullHouse),
+            ([.nine, .ten, .jack, .queen, .king], .straight),
+            ([.ten, .jack, .queen, .king, .ace], .straight),
+            ([.jack, .jack, .jack, .ace, .nine], .threeOfAKind),
+            ([.ace, .ace, .king, .king, .nine], .twoPair),
+            ([.queen, .queen, .ace, .king, .nine], .onePair),
+            ([.ace, .king, .queen, .ten, .nine], .highCard)
+        ]
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        measure {
-            // Put the code you want to measure the time of here.
+        for (dice, expectedCategory) in cases {
+            XCTAssertEqual(try evaluator.evaluate(dice).category, expectedCategory, "\(dice)")
         }
     }
 
+    func testEvaluatorUsesTieBreakersAndCategoryRanking() throws {
+        print("Comparing hand ranks and tie-break values")
+        let fourKings = try evaluator.evaluate([.king, .king, .king, .king, .nine])
+        let fourQueens = try evaluator.evaluate([.queen, .queen, .queen, .queen, .ace])
+        let fullHouse = try evaluator.evaluate([.ace, .ace, .ace, .nine, .nine])
+        let lowStraight = try evaluator.evaluate([.nine, .ten, .jack, .queen, .king])
+        let highStraight = try evaluator.evaluate([.ten, .jack, .queen, .king, .ace])
+        let pairOfAces = try evaluator.evaluate([.ace, .ace, .king, .queen, .nine])
+        let pairOfAcesLowerKicker = try evaluator.evaluate([.ace, .ace, .king, .jack, .nine])
+        let twoHighPairs = try evaluator.evaluate([.ace, .ace, .king, .king, .nine])
+        let twoLowPairs = try evaluator.evaluate([.queen, .queen, .jack, .jack, .ace])
+        let strongFullHouse = try evaluator.evaluate([.ace, .ace, .ace, .nine, .nine])
+        let weakFullHouse = try evaluator.evaluate([.king, .king, .king, .ace, .ace])
+        let strongHighCard = try evaluator.evaluate([.ace, .king, .queen, .ten, .nine])
+        let weakHighCard = try evaluator.evaluate([.ace, .king, .jack, .ten, .nine])
+
+        XCTAssertEqual(evaluator.compare(fourKings, fourQueens), .orderedDescending)
+        XCTAssertEqual(evaluator.compare(fourKings, fullHouse), .orderedDescending)
+        XCTAssertEqual(evaluator.compare(highStraight, lowStraight), .orderedDescending)
+        XCTAssertEqual(evaluator.compare(pairOfAces, pairOfAcesLowerKicker), .orderedDescending)
+        XCTAssertEqual(evaluator.compare(twoHighPairs, twoLowPairs), .orderedDescending)
+        XCTAssertEqual(evaluator.compare(strongFullHouse, weakFullHouse), .orderedDescending)
+        XCTAssertEqual(evaluator.compare(strongHighCard, weakHighCard), .orderedDescending)
+        XCTAssertEqual(
+            evaluator.compare(
+                try evaluator.evaluate([.ace, .king, .queen, .ten, .nine]),
+                try evaluator.evaluate([.ace, .king, .queen, .ten, .nine])
+            ),
+            .orderedSame
+        )
+    }
+
+    func testEvaluatorRejectsInvalidHandSize() {
+        print("Checking invalid hand sizes are rejected")
+        XCTAssertThrowsError(try evaluator.evaluate([.ace, .king, .queen, .ten]))
+        XCTAssertThrowsError(try evaluator.evaluate([.ace, .king, .queen, .ten, .nine, .nine]))
+    }
+
+    func testGameRerollsOnlyUnheldDiceAndCompletesTwoPlayerGame() throws {
+        print("Starting deterministic two-player game")
+        let roller = StubDiceRoller(rolls: [
+            [.ace, .ace, .nine, .ten, .jack],
+            [.queen, .king, .nine],
+            [.king, .king, .king, .king, .king]
+        ])
+        let game = PokerDiceGame(diceRoller: roller)
+        var state = game.startNewGame()
+
+        XCTAssertEqual(state.phase, .playing(.playerOne))
+        state = try game.roll(state)
+        XCTAssertEqual(state[handFor: .playerOne].dice, [.ace, .ace, .nine, .ten, .jack])
+        print("Player 1 rolled five dice")
+
+        state = try game.setHeldDice([0, 1], in: state)
+        state = try game.roll(state)
+        XCTAssertEqual(state[handFor: .playerOne].dice, [.ace, .ace, .queen, .king, .nine])
+        XCTAssertEqual(state[handFor: .playerOne].rollsUsed, 2)
+        print("Player 1 kept the pair of Aces and rerolled the other three")
+
+        state = try game.finishTurn(state)
+        XCTAssertEqual(state.phase, .awaitingHandoff(.playerTwo))
+        state = try game.confirmHandoff(state)
+        XCTAssertEqual(state.phase, .playing(.playerTwo))
+        state = try game.roll(state)
+        state = try game.finishTurn(state)
+
+        XCTAssertEqual(state.phase, .finished(.winner(.playerTwo)))
+        XCTAssertTrue(state[handFor: .playerOne].isComplete)
+        XCTAssertTrue(state[handFor: .playerTwo].isComplete)
+        print("Player 2 won with Five of a Kind")
+    }
+
+    func testGameAllowsEarlyFinishAndDraw() throws {
+        print("Checking early finish and tied hands")
+        let roller = StubDiceRoller(rolls: [
+            [.ace, .ace, .king, .king, .nine],
+            [.ace, .ace, .king, .king, .nine]
+        ])
+        let game = PokerDiceGame(diceRoller: roller)
+        var state = game.startNewGame()
+        state = try game.roll(state)
+        state = try game.finishTurn(state)
+        state = try game.confirmHandoff(state)
+        state = try game.roll(state)
+        state = try game.finishTurn(state)
+
+        XCTAssertEqual(state.phase, .finished(.draw))
+        print("Both players tied with the same Two Pair hand")
+
+        let restartedState = game.startNewGame()
+        XCTAssertEqual(restartedState.phase, .playing(.playerOne))
+        XCTAssertTrue(PlayerID.allCases.allSatisfy {
+            restartedState[handFor: $0] == PlayerHand()
+        })
+        print("A new game starts with clean player hands")
+    }
+
+    func testGameRejectsInvalidTransitionsAndRollLimits() throws {
+        print("Checking turn, hold, and roll-limit validation")
+        let roller = StubDiceRoller(rolls: [
+            [.nine, .ten, .jack, .queen, .king],
+            [.nine],
+            [.ten],
+            [.jack]
+        ])
+        let game = PokerDiceGame(diceRoller: roller)
+        var state = game.startNewGame()
+
+        XCTAssertThrowsError(try game.confirmHandoff(state))
+        XCTAssertThrowsError(try game.setHeldDice([0], in: state))
+        XCTAssertThrowsError(try game.applyingRoll([.ace], to: state))
+
+        state = try game.roll(state)
+        XCTAssertThrowsError(try game.setHeldDice([5], in: state))
+        state = try game.setHeldDice([0, 1, 2, 3, 4], in: state)
+        XCTAssertThrowsError(try game.roll(state)) { error in
+            XCTAssertEqual(error as? PokerDiceError, .noDiceToReroll)
+        }
+        state = try game.setHeldDice([0, 1, 2, 3], in: state)
+        state = try game.roll(state)
+        state = try game.roll(state)
+        XCTAssertEqual(state[handFor: .playerOne].rollsUsed, 3)
+        XCTAssertThrowsError(try game.roll(state))
+        print("Invalid transitions and a fourth roll were rejected")
+    }
+}
+
+private final class StubDiceRoller: DiceRolling {
+    private var rolls: [[DieFace]]
+
+    init(rolls: [[DieFace]]) {
+        self.rolls = rolls
+    }
+
+    func rollDice(count: Int) -> [DieFace] {
+        guard !rolls.isEmpty else {
+            XCTFail("No deterministic roll was supplied")
+            return []
+        }
+        let nextRoll = rolls.removeFirst()
+        guard nextRoll.count == count else {
+            XCTFail("Expected \(count) dice, received \(nextRoll.count)")
+            return []
+        }
+        return nextRoll
+    }
 }
