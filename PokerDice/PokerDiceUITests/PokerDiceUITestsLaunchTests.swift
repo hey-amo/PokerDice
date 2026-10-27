@@ -1,13 +1,13 @@
 //
-//  SimplePokerDiceUITestsLaunchTests.swift
-//  SimplePokerDiceUITests
+//  PokerDiceUITestsLaunchTests.swift
+//  PokerDiceUITests
 //
-//  Created by Amarjit on 22/04/2025.
+//  Created by Amarjit on 27/10/2026.
 //
 
 import XCTest
 
-final class SimplePokerDiceUITestsLaunchTests: XCTestCase {
+final class PokerDiceUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
